@@ -1,0 +1,19 @@
+{
+  "id": "template",
+  "display_name": "Template",
+  "rendering": {"scale_mode": "smooth"},
+  "animations": {
+    "IDLE": {"frames": ["idle/idle_01.png"], "frame_duration_ms": 400},
+    "WALK_LEFT": {
+      "frames": ["walk/walk_01.png", "walk/walk_02.png", "walk/walk_03.png", "walk/walk_04.png"],
+      "frame_duration_ms": 180
+    },
+    "WALK_RIGHT": {
+      "frames": ["walk/walk_01.png", "walk/walk_02.png", "walk/walk_03.png", "walk/walk_04.png"],
+      "frame_duration_ms": 180
+    },
+    "WORK": {"frames": ["sit/sit_01.png"], "frame_duration_ms": 500},
+    "SLEEP": {"frames": ["sleep/sleep_01.png"], "frame_duration_ms": 600},
+    "REACT": {"frames": ["react/react_01.png"], "frame_duration_ms": 300}
+  }
+}

@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.runtime/
+.pytest_cache/
+build/
+dist/
+*.stackdump
+*.dmp
+*.tmp
+*.temp
+*.log
+*.bak
+~$*
