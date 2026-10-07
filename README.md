@@ -60,7 +60,8 @@ names, window titles, clipboard contents, or global input hooks are collected.
 - Both walk directions share artwork; pose/facing variation is intentional.
 - The small window must fit the usable screen; transparent areas inside it are
   not guaranteed to pass clicks through.
-- Native visual QA, another-PC testing and all-day stability remain pending.
+- Native Windows visual QA and local packaged EXE testing have been completed.
+- Another-PC testing and long-running/all-day stability testing remain pending.
 
 ## Build the Windows x64 EXE
 
@@ -90,3 +91,8 @@ native desktop and extended-use testing.
 
 See [RELEASE_PREPARATION.md](RELEASE_PREPARATION.md) for source/release contents
 and packaging requirements. `main.__version__` is the application version source.
+
+## License
+
+- Source code: [MIT License](LICENSE).
+- Bundled assets: see [ASSET_LICENSE.md](ASSET_LICENSE.md).

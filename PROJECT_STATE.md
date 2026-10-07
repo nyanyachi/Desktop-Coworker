@@ -8,6 +8,11 @@ A Windows x64 PyInstaller onefile/windowed EXE has been built at
 `dist/DesktopCoworker-v0.1.0.exe` (58,832,669 bytes). No ZIP or GitHub release
 has been created. Another-PC validation remains pending.
 
+MIT source-code license added in `LICENSE`; separate bundled asset licensing
+notice added in `ASSET_LICENSE.md`. README validation wording corrected to record
+completed native Windows visual QA and local packaged EXE testing, with
+another-PC and long-running/all-day stability testing still pending.
+
 ## MVP Goal
 
 A lightweight desktop companion, not a full game. Validate: “Would the user
