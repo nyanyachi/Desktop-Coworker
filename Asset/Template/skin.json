@@ -2,6 +2,10 @@
   "id": "template",
   "display_name": "Template",
   "rendering": {"scale_mode": "smooth"},
+  "drag_visuals": {
+    "grabbed": {"frames": ["drag/grabbed_01.png", "drag/grabbed_02.png"], "frame_duration_ms": 700},
+    "cry": {"frames": ["drag/cry_01.png", "drag/cry_02.png"], "frame_duration_ms": 700}
+  },
   "animations": {
     "IDLE": {"frames": ["idle/idle_01.png"], "frame_duration_ms": 400},
     "WALK_LEFT": {

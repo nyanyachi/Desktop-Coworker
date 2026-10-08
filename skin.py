@@ -78,11 +78,12 @@ class Animation:
 
 
 class Skin:
-    def __init__(self, skin_id, display_name, animations, scale_mode='pixel'):
+    def __init__(self, skin_id, display_name, animations, scale_mode='pixel', drag_visuals=None):
         self.id = skin_id
         self.display_name = display_name
         self.animations = animations
         self.scale_mode = scale_mode
+        self.drag_visuals = drag_visuals if drag_visuals is not None else {}
 
     @classmethod
     def load(cls, skin_id=DEFAULT_SKIN, size=QSize(128, 128), root=SKIN_ROOT):
@@ -152,7 +153,46 @@ class Skin:
                                           transformation)
             animations = {key: Animation(tuple(cache[path] for path in sequence), durations[key])
                           for key, sequence in paths.items()}
-            return cls(skin_id, display_name, animations, scale_mode)
+            # Interaction artwork never participates in the normal shared scale.
+            definitions = manifest.get('drag_visuals', {})
+            if not isinstance(definitions, dict):
+                raise ValueError('drag_visuals must be an object')
+            drag_visuals = {}
+            drag_cache = {}
+            for mode, definition in definitions.items():
+                if mode not in ('grabbed', 'cry'):
+                    raise ValueError(f'Unknown drag visual: {mode}')
+                if isinstance(definition, str):
+                    frames, duration = [definition], 300
+                elif isinstance(definition, dict):
+                    frames = definition['frames']
+                    duration = definition['frame_duration_ms']
+                else:
+                    raise ValueError('Drag visuals must be paths or animation objects')
+                if not isinstance(frames, list) or not frames:
+                    raise ValueError('Drag frames must be a nonempty list')
+                if type(duration) is not int or not 0 < duration <= 2_147_483_647:
+                    raise ValueError('Drag frame_duration_ms must be a positive Qt timer integer')
+                sequence = []
+                for filename in frames:
+                    if not isinstance(filename, str) or not filename:
+                        raise ValueError('Drag visual paths must be nonempty strings')
+                    path = (folder / filename).resolve()
+                    if not path.is_relative_to(folder.resolve()):
+                        raise ValueError('Drag visual paths must stay inside the skin folder')
+                    if path not in drag_cache:
+                        image = (QImage(str(path)) if scale_mode == 'smooth'
+                                 else prepare_image(path, folder))
+                        if image.isNull():
+                            raise ValueError(f'Cannot load drag image: {path}')
+                        bounds = visible_bounds(image)
+                        if bounds.isEmpty():
+                            raise ValueError(f'Drag image is fully transparent: {path}')
+                        drag_cache[path] = QPixmap.fromImage(image.copy(bounds)).scaled(
+                            size, Qt.AspectRatioMode.KeepAspectRatio, transformation)
+                    sequence.append(drag_cache[path])
+                drag_visuals[mode] = Animation(tuple(sequence), duration)
+            return cls(skin_id, display_name, animations, scale_mode, drag_visuals)
         except (OSError, ValueError, KeyError, TypeError) as error:
             raise ValueError(f'Invalid skin {skin_id!r}: {error}') from error
 

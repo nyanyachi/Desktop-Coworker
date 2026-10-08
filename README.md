@@ -1,4 +1,4 @@
-# Desktop Coworker v0.1.0
+# Desktop Coworker v0.1.1
 
 A small desktop companion for Windows. This MVP asks: would you want to leave
 this character running all day? It is a lightweight companion, not a full game.
@@ -11,17 +11,22 @@ Template is the only bundled skin and the default.
 - **React:** briefly reacts when the cursor enters its proximity zone.
 
 The transparent, frameless character stays above normal windows. Left-drag to
-move it; automatic movement stops during dragging. Right-click the character
+move it between monitors; autonomous walking stays on the current monitor.
+Lifting shows GRABBED; a horizontal pull shows CRY. Lifted release falls to the
+monitor floor, with one small rebound and a brief sitting pose. Re-grabbing
+cancels the motion; automatic movement stops during dragging. Right-click the character
 and select **Quit Desktop Coworker** to exit. Development launches also support
 Ctrl+C in the launching terminal.
 
 ## Run the Windows EXE
 
-Download `DesktopCoworker-v0.1.0.exe` to a writable folder such as Downloads or
+Download `DesktopCoworker-v0.1.1.exe` to a writable folder such as Downloads or
 Desktop and double-click it. No Python installation or console is needed.
 First launch creates `Asset/Template/` beside the EXE from bundled source artwork.
 Later launches preserve existing files. Keep the EXE and its `Asset/` folder
-together when moving an existing setup. A protected/read-only location produces
+together when moving an existing setup. Existing Template folders are preserved
+on upgrade; back up and rename `Asset/Template/` before launching if you want
+the updated bundled Template artwork and drag animations. A protected/read-only location produces
 an error asking you to move the EXE to a writable folder.
 
 Right-click the character and select **Quit Desktop Coworker** to exit.
@@ -56,7 +61,7 @@ checks the current cursor position. No typed text, click history, application
 names, window titles, clipboard contents, or global input hooks are collected.
 
 - No settings, tray icon, saved position, sound, click reactions, or installer.
-- Basic screen clamping; monitor removal and display/taskbar changes are not handled.
+- Basic monitor fallback; advanced live display/taskbar-change recovery is not handled.
 - Both walk directions share artwork; pose/facing variation is intentional.
 - The small window must fit the usable screen; transparent areas inside it are
   not guaranteed to pass clicks through.
@@ -73,7 +78,7 @@ Use Windows x64 Python 3.12 and the project virtual environment:
 ```
 
 The PyInstaller onefile/windowed spec reads the version from `main.__version__`;
-the output is `dist/DesktopCoworker-v0.1.0.exe`. No release ZIP is needed.
+the output is `dist/DesktopCoworker-v0.1.1.exe`. No release ZIP is needed.
 
 ## Development checks
 

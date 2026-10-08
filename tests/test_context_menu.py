@@ -57,7 +57,7 @@ class ContextMenuTests(unittest.TestCase):
         self.assertFalse(shiboken6.isValid(w))
 
     def test_quit_action_exits_event_loop_and_destroys_owned_resources(self):
-        for state in ('IDLE', 'WALK', 'WORK', 'SLEEP', 'REACT'):
+        for state in ('IDLE', 'WALK', 'WORK', 'SLEEP', 'REACT', 'FALL', 'LANDING', 'REBOUND'):
             with self.subTest(state=state):
                 code = f'''
 from contextlib import contextmanager
@@ -69,7 +69,20 @@ owned = []
 original = main.CharacterWindow.__init__
 def initialize(self, *args, **kwargs):
     original(self, *args, **kwargs)
-    self._enter_state(main.BehaviorState.{state})
+    self._enter_state(main.BehaviorState.{'IDLE' if state in ('FALL', 'LANDING', 'REBOUND') else state})
+    if {state == 'FALL'}:
+        self.move(self.x(), self.screen().availableGeometry().top())
+        self._set_drag_visual('grabbed')
+        self._start_fall()
+        assert self._fall_timer.isActive()
+    if {state in ('LANDING', 'REBOUND')}:
+        self._set_drag_visual('grabbed')
+        self._finish_fall()
+        if {state == 'LANDING'}:
+            self._finish_rebound()
+            assert self._landing_timer.isActive()
+        else:
+            assert self._rebounding and self._fall_timer.isActive()
     owned.extend([self, self._animation, self._activity, self._proximity,
                   self._context_menu, *self.findChildren(QTimer)])
     QTimer.singleShot(50, self._context_menu.actions()[0].trigger)

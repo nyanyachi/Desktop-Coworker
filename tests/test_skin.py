@@ -84,7 +84,8 @@ class SkinTests(unittest.TestCase):
             skin = Skin.load('template')
         self.assertEqual(skin.scale_mode, 'smooth')
         self.assertEqual(skin.display_name, 'Template')
-        self.assertEqual(len(bounds), 8)  # Shared walk paths are loaded only once.
+        self.assertEqual(len(bounds), 12)  # Eight normal frames plus four separate drag frames.
+        bounds = bounds[:8]  # Normal shared scale excludes interaction artwork.
         factor = min(128 / max(b.width() for b in bounds),
                      128 / max(b.height() for b in bounds))
         index = 0

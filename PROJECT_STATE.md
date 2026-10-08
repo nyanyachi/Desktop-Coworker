@@ -2,8 +2,32 @@
 
 ## Release Status
 
-**Desktop Coworker v0.1.1-beta.1 dual-monitor QA build.** Version source:
-`main.__version__ = "0.1.1-beta.1"`. Template is the only bundled/default skin.
+**Desktop Coworker v0.1.1 feature implementation complete.** Version source:
+`main.__version__ = "0.1.1"`. Final automated QA: all 72 tests and syntax checks
+pass, including build-PATH isolation, external extraction, legacy drag visuals,
+state/deadline restoration, motion cancellation and Quit/resource cleanup.
+Static review found no concrete correctness issue requiring a behavior change.
+No behavior timings, visual tuning, assets or build configuration were changed.
+Final clean Windows x64 onefile/windowed build created with `.\build.ps1`:
+`dist/DesktopCoworker-v0.1.1.exe` (66,258,562 bytes), SHA256
+`490efbed4b7c26a4b94173a6ef8fbf644688de5b77fe8f3e0993b7c798fa96f1`.
+Archive checks confirm embedded version 0.1.1, GUI subsystem, 13 Template files,
+Qt platform/image plugins, no runtime caches, and no incompatible ICU DLLs.
+Clean-folder `--help` launches from a different working directory exit 0 with
+Python/Qt development paths removed. First-run Template files match source;
+second-run preserves Template/custom user files and modification times.
+Final-build native smoke check passed: user confirmed Template renders without
+a console or Qt/DLL error, lift/drop rebound and SIT pose work, and right-click
+Quit closes it. The harness confirmed exit code 0 with no parent/child process
+remaining; external Template/custom user assets and mtimes were preserved.
+Existing v0.1.0 and beta.1 artifacts and all source assets are hash-verified unchanged.
+
+User-reported native QA: real dual-monitor support, drag reactions, gravity and
+re-grabbing during falls passed; the landing rebound is visually approved.
+External-machine and long-running/all-day validation remain pending.
+
+Historical beta.1 build (before drag reactions): Template is the only
+bundled/default skin.
 Clean Windows x64 PyInstaller onefile/windowed build created at
 `dist/DesktopCoworker-v0.1.1-beta.1.exe` (58,833,682 bytes), preserving the
 isolated build PATH fix. Existing v0.1.0 EXE is unchanged (SHA256 verified).
@@ -14,7 +38,8 @@ Clean-folder first launch extracted nine byte-identical Template files;
 dragging, right-click Quit, and no console or Qt/DLL errors. The smoke harness
 confirmed normal exit code 0; no beta parent/child processes remain. Existing
 external Template hashes/mtimes and a custom user asset file were preserved.
-Multi-monitor support still awaits real dual-monitor Windows manual QA.
+User reports real dual-monitor Windows QA passed for v0.1.1-beta.1.
+The beta artifact predates the drag reactions implemented below.
 No GitHub release has been created by this task.
 
 MIT source-code license added in `LICENSE`; separate bundled asset licensing
@@ -26,7 +51,8 @@ v0.1.1 development started: multi-monitor drag support implemented. Users can
 move the character between monitors; release selects the cursor's screen (then
 window center, then current/primary fallback) and clamps to its usable geometry.
 Autonomous behavior remains confined to the current monitor. Real dual-monitor
-Windows manual QA is pending; logical-coordinate automated checks do not replace it.
+Windows manual QA passed for beta.1 (user-reported). User also reports drag
+reaction and gravity/re-grab visual QA passed for the completed feature set.
 
 ## MVP Goal
 
@@ -153,12 +179,12 @@ IDLE, WALK_LEFT, WALK_RIGHT, WORK, SLEEP, REACT. Legacy `visuals` single-image
 mapping is supported with all six keys (400 ms metadata per static visual).
 
 Template prototype skin added at `Asset/Template/skin.json` with ID `template`;
-manual Windows visual verification is pending. Discovery supports skin folders
+native Windows visual verification has passed (user-reported). Discovery supports skin folders
 directly under `Asset/` as well as `Asset/starter_candidates/`, using lowercase
 folder IDs. Behavior remains character-independent.
 Template smooth rendering and offscreen CLI launch/render/Qt shutdown pass;
 all eight source PNG hashes remain unchanged. Existing Template runtime files are
-ignored in smooth mode; manual Windows visual verification remains pending.
+ignored in smooth mode; native Windows visual verification passed (user-reported).
 
 All current manifests use:
 
@@ -170,11 +196,70 @@ All current manifests use:
 | SLEEP | `sleep/sleep_01.png` | 600 ms |
 | REACT | `react/react_01.png` | 300 ms |
 
-Only WALK has multiple frames. Left/right share the sequence; there is no flipping.
+Only WALK has multiple normal-state frames; drag overrides each have two frames. Left/right share the sequence; there is no flipping.
 **Behavior must remain character-independent:** no skin IDs, asset paths, frame
 counts, animation timings, or character-specific offsets in behavior logic.
 
 ## Interaction
+
+Cosmetic landing rebound: floor contact shows cached WORK/SIT artwork and runs
+one 9-logical-pixel arc over 220 ms using the existing motion timer and monotonic
+elapsed time. X and current-monitor ownership are retained; the window settles
+exactly at that monitor's available floor, then holds SIT for the full 400 ms.
+Re-grabbing cancels the arc from its current position. No repeated bounce,
+physics state, or gravity-constant change; deferred state rules remain intact.
+User has manually approved the landing rebound.
+
+
+Landing presentation: after a GRABBED fall stops at the floor, the fall timer
+and grabbed animation stop. A visual-only override shows the skin-defined WORK
+(sitting) frame for 400 ms using a single-shot owned timer. No LANDING behavior
+state is added. On timeout, IDLE/WALK resume their saved remaining duration and
+existing visual/animation without state reset; SLEEP/WORK/REACT retain deadlines
+and process deferred expiry afterward. Activity/proximity and WALK movement wait
+until the pose ends. Re-grabbing cancels it immediately; Quit remains available.
+Gravity, monitor geometry, thresholds, assets and animation timings are unchanged.
+Landing presentation is visually approved with the rebound.
+
+
+v0.1.1 drag reactions: displacement from the original global press point selects
+an optional skin-driven visual override while left dragging. At least 40 logical
+pixels upward, with vertical displacement at least as dominant as horizontal,
+selects grabbed. Once grabbed, it stays active while at least 40 pixels above
+the press point, regardless of horizontal movement. Cry requires returning below
+that lifted region and at least 40 pixels with strict horizontal dominance. Smaller/downward-dominant drags show the underlying visual.
+Normal/CRY release clears the override immediately. GRABBED release falls
+within the release monitor, retaining the grabbed animation until landing;
+landing clears the override and uses existing deferred-state rules.
+These are not behavior states. Right-click, proximity, and shutdown are unchanged.
+Optional `drag_visuals` accepts legacy static paths or animation objects with
+`frames` and `frame_duration_ms`. Template uses `drag/grabbed_01.png` /
+`grabbed_02.png` and `drag/cry_01.png` / `cry_02.png`, at 700 ms per frame.
+Skins without either entry retain normal dragging visuals. One owned timer
+steps cached frames only during multi-frame drag overrides; single frames stay
+static. Same-mode mouse moves do not restart playback; mode change resets to
+frame 1; normal/CRY release stops playback, while GRABBED continues through falling.
+Artwork is unmodified, alpha-cropped, individually fitted to 128 x 128 using the
+skin's rendering mode, and cached once outside normal shared-scale computation.
+Mode changes request repaint; mouse moves do not decode, scale, or access files.
+Multi-monitor ownership/clamping and WALK boundaries are unchanged.
+User reports drag reaction visual QA passed; final packaged multi-monitor
+gravity checks remain on the release-validation checklist.
+
+Simple gravity / landing is implemented as an interaction phase, not a behavior
+state. Only release with an active lifted GRABBED override triggers it. The
+release monitor's available geometry supplies the floor; it never falls into a
+monitor below. A 16 ms timer integrates monotonic elapsed time with acceleration
+1,800 logical pixels/s² and a 1,200 pixels/s speed cap, starting from zero.
+X is preserved/clamped and overshoot lands exactly at bottom - window height + 1.
+The timer stays stopped outside falls and stops immediately on landing or
+re-grab; owned-resource destruction handles Quit. GRABBED frames stay cached
+and animate at 700 ms/frame. WALK/activity/proximity are suppressed during fall;
+SLEEP/WORK/REACT deadlines continue with expiry deferred until landing. Re-grab
+cancels the fall and starts dragging at the current position. No physics engine,
+bounce, throwing, horizontal inertia, new artwork, or behavior state is added.
+User reports gravity/re-grab visual QA passed; final packaged dual-monitor
+gravity validation remains on the release checklist.
 
 Left-button dragging follows the cursor freely across monitors and suppresses
 autonomous movement. Release clamps the whole window to the selected monitor's
@@ -210,7 +295,7 @@ Right-click state/timer preservation, left dragging, no-console Quit in all five
 states, owned-resource destruction, and real Windows Ctrl+C including dragging
 are covered. Mixed-cycle QA checks 500 rounds with stable timer identities/frame
 keys; Template adds 500 drag/deferred-expiry cases with no image reprocessing.
-All **46 tests pass**, including first-run extraction and build-PATH isolation;
+All **72 tests pass**, including first-run extraction and build-PATH isolation;
 syntax compilation passes.
 Default and explicit Template launches from a different working directory quit
 cleanly through the menu action. Frozen pixel-preparation tests confirm no writes
@@ -219,8 +304,8 @@ character-specific behavior class was removed; the remaining state-machine cases
 run against a discovered bundled skin. The approved default-skin constant now
 selects `template`; no other production behavior, timings or rendering changed.
 
-Native Windows menu appearance, Template visual quality, GPU/compositor usage,
-and all-day stability still require manual testing. Short offscreen checks do
+Native Windows menu appearance and Template visual QA passed (user-reported).
+GPU/compositor measurements and all-day stability remain pending. Short offscreen checks do
 not establish long-running native performance. Ctrl+C before handler registration
 during startup uses Python's default handling.
 
@@ -270,19 +355,10 @@ needed locally. Windows system ICU/UCRT remain OS dependencies.
 
 ## Last Completed Task
 
-v0.1.1 multi-monitor drag support; real dual-monitor Windows manual QA pending.
+v0.1.1 final source QA, clean release build and local packaged smoke validation complete.
 
 ## Next Phase
 
-Next step: GitHub pre-release upload (separate authorization/task) and real
-dual-monitor testing of v0.1.1-beta.1. No upload performed in this task.
-
-Next planned feature: drag interaction reactions (lift -> grabbed pose,
-horizontal pull -> cry reaction). These reactions are not implemented yet.
-
-Finish native GUI process-exit/animation/drag QA and test the final EXE on another
-Windows PC, then authorized GitHub v0.1.0 source/tag/release publication. Preserve
-current behavior/timings.
-Continue native visual QA and long-running real-world usage testing.
-See `RELEASE_PREPARATION.md` for source/ZIP contents and packaging requirements;
-`CUSTOM_SKINS.md` documents the manifest and render modes.
+External Windows machine testing (without Python), final packaged multi-monitor
+validation, and authorized final release publication. Extended-use CPU/memory and
+all-day stability checks remain pending. No commit/push or GitHub release in this task.

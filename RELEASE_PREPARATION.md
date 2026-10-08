@@ -1,4 +1,4 @@
-# Desktop Coworker v0.1.0 packaging
+# Desktop Coworker v0.1.1 packaging
 
 The distributable is one Windows x64 GUI executable, not a ZIP or onedir release.
 Version source: `main.__version__`. Build configuration derives the artifact name
@@ -22,7 +22,7 @@ Remove-Item Env:QT_QPA_PLATFORM
 Template's manifest and original PNGs as first-run resources. Qt/Python runtime
 libraries and plugins are collected by PyInstaller's hooks. Build dependencies
 are pinned in `requirements-build.txt`; runtime dependencies stay separate.
-Output: `dist/DesktopCoworker-v0.1.0.exe`. Build intermediates remain under ignored
+Output: `dist/DesktopCoworker-v0.1.1.exe`. Build intermediates remain under ignored
 `build/`. This is a reproducible configuration, not a claim of byte-identical builds.
 
 ## Resource and custom-skin contract
@@ -42,12 +42,12 @@ in memory and do not write `.runtime/` caches inside the bundled extraction area
 
 ## Source repository and release contents
 
-Keep the six application modules, `tests/`, Template's manifest/eight source PNGs,
+Keep the six application modules, `tests/`, Template's manifest/twelve source PNGs,
 README/custom-skin/release/project-state documents, `requirements.txt`,
 `requirements-build.txt`, `DesktopCoworker.spec`, `build.ps1`, and `.gitignore`.
 Ignore virtual environments, caches, logs, stackdumps and generated build output.
 
-Publish only `DesktopCoworker-v0.1.0.exe` as the requested binary artifact. It must
+Publish only `DesktopCoworker-v0.1.1.exe` as the requested binary artifact. It must
 not require a ZIP, a source checkout or a pre-created Asset directory. Do not
 attach `.venv`, tests, project-state files, raw build trees or caches. On first run,
 the application creates editable assets beside the downloaded EXE.

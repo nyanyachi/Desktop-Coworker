@@ -62,7 +62,7 @@ class FinalQATests(unittest.TestCase):
         for skin_id in discover_skins():
             w = self.make_window(skin_id)
             timers = w.findChildren(QTimer)
-            self.assertEqual(len(timers), 6)
+            self.assertEqual(len(timers), 9)  # Includes drag animation and inactive fall timers.
             frame_keys = {key: tuple(frame.cacheKey() for frame in animation.frames)
                           for key, animation in w.skin.animations.items()}
             try:

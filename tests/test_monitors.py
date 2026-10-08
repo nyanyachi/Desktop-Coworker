@@ -65,6 +65,11 @@ class MonitorTests(unittest.TestCase):
                                     QPointF(w.pos() + QPoint(72, 80)),
                                     Qt.LeftButton, Qt.LeftButton, Qt.NoModifier)
                 w.mousePressEvent(press)
+                lift = QMouseEvent(QEvent.MouseMove, QPointF(72, 80),
+                                   QPointF(w._drag_origin + QPoint(0, -100)),
+                                   Qt.NoButton, Qt.LeftButton, Qt.NoModifier)
+                w.mouseMoveEvent(lift)
+                self.assertEqual(w._drag_visual, 'grabbed')
                 pointer = area.topLeft() + QPoint(10, 10)
                 move = QMouseEvent(QEvent.MouseMove, QPointF(72, 80), QPointF(pointer),
                                    Qt.NoButton, Qt.LeftButton, Qt.NoModifier)
@@ -77,8 +82,18 @@ class MonitorTests(unittest.TestCase):
                 release = QMouseEvent(QEvent.MouseButtonRelease, QPointF(72, 80),
                                       QPointF(pointer), Qt.LeftButton,
                                       Qt.NoButton, Qt.NoModifier)
-                with patch('main.QApplication.screenAt', return_value=target):
+                with patch('main.QApplication.screenAt', return_value=target), \
+                        patch('main.QApplication.screens', return_value=[target]):
                     w.mouseReleaseEvent(release)
+                    if w._falling:
+                        with patch('main.QApplication.screens', return_value=[target]), \
+                                patch('main.time.monotonic', return_value=w._fall_last_tick + 10):
+                            w._fall_step()
+                    if w._rebounding:
+                        w._finish_rebound()
+                    if w._landing:
+                        w._landing_timer.timeout.emit()
+                self.assertIsNone(w._drag_visual)
                 self.assertIs(w._current_screen, target)
                 self.assertTrue(area.contains(w.geometry()))
                 if state in (BehaviorState.WORK, BehaviorState.SLEEP, BehaviorState.REACT):

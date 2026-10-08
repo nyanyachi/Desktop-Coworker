@@ -11,7 +11,7 @@ from main import __version__
 
 class ReleaseTests(unittest.TestCase):
     def test_release_version(self):
-        self.assertEqual(__version__, '0.1.1-beta.1')
+        self.assertEqual(__version__, '0.1.1')
 
     def test_default_and_explicit_launch_from_another_directory(self):
         root = Path(__file__).resolve().parents[1]
