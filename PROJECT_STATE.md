@@ -2,16 +2,31 @@
 
 ## Release Status
 
-**Desktop Coworker v0.1.0 release candidate.** Version source:
-`main.__version__ = "0.1.0"`. Template is the only bundled/default skin.
-A Windows x64 PyInstaller onefile/windowed EXE has been built at
-`dist/DesktopCoworker-v0.1.0.exe` (58,832,669 bytes). No ZIP or GitHub release
-has been created. Another-PC validation remains pending.
+**Desktop Coworker v0.1.1-beta.1 dual-monitor QA build.** Version source:
+`main.__version__ = "0.1.1-beta.1"`. Template is the only bundled/default skin.
+Clean Windows x64 PyInstaller onefile/windowed build created at
+`dist/DesktopCoworker-v0.1.1-beta.1.exe` (58,833,682 bytes), preserving the
+isolated build PATH fix. Existing v0.1.0 EXE is unchanged (SHA256 verified).
+All 46 tests and syntax checks passed before packaging. Archive checks confirm
+x64 GUI subsystem, Template assets, Qt plugins, and no conflicting ICU DLLs.
+Clean-folder first launch extracted nine byte-identical Template files;
+`--help` exited 0. User confirmed native Template rendering/transparency, WALK,
+dragging, right-click Quit, and no console or Qt/DLL errors. The smoke harness
+confirmed normal exit code 0; no beta parent/child processes remain. Existing
+external Template hashes/mtimes and a custom user asset file were preserved.
+Multi-monitor support still awaits real dual-monitor Windows manual QA.
+No GitHub release has been created by this task.
 
 MIT source-code license added in `LICENSE`; separate bundled asset licensing
 notice added in `ASSET_LICENSE.md`. README validation wording corrected to record
 completed native Windows visual QA and local packaged EXE testing, with
 another-PC and long-running/all-day stability testing still pending.
+
+v0.1.1 development started: multi-monitor drag support implemented. Users can
+move the character between monitors; release selects the cursor's screen (then
+window center, then current/primary fallback) and clamps to its usable geometry.
+Autonomous behavior remains confined to the current monitor. Real dual-monitor
+Windows manual QA is pending; logical-coordinate automated checks do not replace it.
 
 ## MVP Goal
 
@@ -161,8 +176,10 @@ counts, animation timings, or character-specific offsets in behavior logic.
 
 ## Interaction
 
-Left-button dragging clamps the whole window to the current screen's available
-geometry and suppresses autonomous movement. IDLE/WALK release returns to fresh
+Left-button dragging follows the cursor freely across monitors and suppresses
+autonomous movement. Release clamps the whole window to the selected monitor's
+available geometry; WALK uses that monitor until the next drag. Removed current
+monitors fall back to primary when screen bounds are next needed. IDLE/WALK release returns to fresh
 IDLE unless sleep is due. WORK/SLEEP/REACT retain their deadlines during dragging;
 expiry is deferred until release. Dragging does not wake sleeping characters.
 
@@ -193,7 +210,7 @@ Right-click state/timer preservation, left dragging, no-console Quit in all five
 states, owned-resource destruction, and real Windows Ctrl+C including dragging
 are covered. Mixed-cycle QA checks 500 rounds with stable timer identities/frame
 keys; Template adds 500 drag/deferred-expiry cases with no image reprocessing.
-All **43 tests pass**, including first-run extraction and build-PATH isolation;
+All **46 tests pass**, including first-run extraction and build-PATH isolation;
 syntax compilation passes.
 Default and explicit Template launches from a different working directory quit
 cleanly through the menu action. Frozen pixel-preparation tests confirm no writes
@@ -253,9 +270,15 @@ needed locally. Windows system ICU/UCRT remain OS dependencies.
 
 ## Last Completed Task
 
-QtCore packaging DLL bug fix; onedir and onefile local launches verified.
+v0.1.1 multi-monitor drag support; real dual-monitor Windows manual QA pending.
 
 ## Next Phase
+
+Next step: GitHub pre-release upload (separate authorization/task) and real
+dual-monitor testing of v0.1.1-beta.1. No upload performed in this task.
+
+Next planned feature: drag interaction reactions (lift -> grabbed pose,
+horizontal pull -> cry reaction). These reactions are not implemented yet.
 
 Finish native GUI process-exit/animation/drag QA and test the final EXE on another
 Windows PC, then authorized GitHub v0.1.0 source/tag/release publication. Preserve

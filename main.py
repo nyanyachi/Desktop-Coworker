@@ -17,7 +17,7 @@ from activity import ActivityMonitor
 from proximity import ProximityMonitor
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1-beta.1"
 
 
 def clamp_position(position: QPoint, size, available: QRect) -> QPoint:
@@ -69,7 +69,8 @@ class CharacterWindow(QWidget):
         quit_action = self._context_menu.addAction('Quit Desktop Coworker')
         quit_action.triggered.connect(QApplication.instance().quit)
 
-        available = QApplication.primaryScreen().availableGeometry()
+        self._current_screen = QApplication.primaryScreen()
+        available = self._current_screen.availableGeometry()
         start = QPoint(
             available.right() - self.width() - 24 + 1,
             available.bottom() - self.height() - 24 + 1,
@@ -189,10 +190,25 @@ class CharacterWindow(QWidget):
                           else BehaviorState.IDLE)
             self._enter_state(next_state)
 
+    def _living_screen(self):
+        """Use explicit ownership, falling back if a monitor was disconnected."""
+        if self._current_screen not in QApplication.screens():
+            self._current_screen = QApplication.primaryScreen()
+        return self._current_screen
+
+    def _drop_screen(self, pointer):
+        """Prefer the release cursor, then window center, then current/primary."""
+        return (QApplication.screenAt(pointer)
+                or QApplication.screenAt(self.frameGeometry().center())
+                or self._living_screen())
+
     def _walk_step(self):
         if self._drag_offset is not None or self.state != BehaviorState.WALK:
             return
-        available = self.screen().availableGeometry()
+        screen = self._living_screen()
+        if screen is None:
+            return
+        available = screen.availableGeometry()
         desired = self.pos() + QPoint(self._direction * self.WALK_STEP_PX, 0)
         position = clamp_position(desired, self.size(), available)
         self.move(position)
@@ -227,15 +243,19 @@ class CharacterWindow(QWidget):
     def mouseMoveEvent(self, event: QMouseEvent):
         if self._drag_offset is not None:
             pointer = event.globalPosition().toPoint()
-            screen = QApplication.screenAt(pointer) or self.screen()
             position = pointer - self._drag_offset
-            self.move(clamp_position(position, self.size(), screen.availableGeometry()))
+            self.move(position)
             event.accept()
         else:
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
+            if self._drag_offset is not None:
+                self._current_screen = self._drop_screen(event.globalPosition().toPoint())
+                if self._current_screen is not None:
+                    self.move(clamp_position(self.pos(), self.size(),
+                                             self._current_screen.availableGeometry()))
             self._drag_offset = None
             self._proximity.resume()
             if self.state == BehaviorState.REACT:
